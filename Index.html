@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Tim Random</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #1a73e8;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            height: 150px;
+            resize: vertical;
+        }
+
+        input[type="text"], 
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        #teamNamesContainer {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            background-color: #1557b0;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .loading-container {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .loading-container.active {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #1a73e8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            margin-left: 15px;
+            color: #1a73e8;
+            font-weight: bold;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        #results {
+            margin-top: 20px;
+        }
+
+        .team {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .team-name {
+            font-weight: bold;
+            color: #1a73e8;
+            margin-bottom: 10px;
+        }
+
+        .team-members {
+            list-style-type: none;
+        }
+
+        .team-members li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .team-members li:last-child {
+            border-bottom: none;
+        }
+
+        /* Member input list styles */
+        .member-input-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .member-input {
+            flex-grow: 1;
+            margin-right: 10px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .member-checkbox {
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+        }
+
+        .member-label {
+            margin-right: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .member-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+        }
+
+        .leader-badge {
+            background-color: #1a73e8;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .add-member-btn {
+            background-color: #34a853;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: background-color 0.3s;
+        }
+
+        .add-member-btn:hover {
+            background-color: #2d8d47;
+        }
+
+        .remove-member-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        @keyframes fadeIn {
+            from { 
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+        }
+        .options-container {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            font-weight: normal;
+        }
+
+        .random-leader {
+            background-color: #ff6b6b;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body><div class="container">
+        <h1>Generator Tim Random</h1>
+        
+        <div class="input-group">
+            <label>Daftar Anggota:</label>
+            <button class="add-member-btn" onclick="addMemberInput()">+ Tambah Anggota</button>
+            <div id="memberList" class="member-list"></div>
+        </div>
+
+        <div class="options-container">
+            <div class="checkbox-group">
+                <input type="checkbox" id="useManualLeaders">
+                <label for="useManualLeaders">Gunakan pilihan ketua manual</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="useRandomLeaders" checked>
+                <label for="useRandomLeaders">Pilih ketua tim secara random</label>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="numTeams">Jumlah Tim:</label>
+            <input type="number" id="numTeams" min="2" value="2" onchange="updateTeamNameInputs()">
+        </div>
+
+        <div class="input-group">
+            <label>Nama Tim:</label>
+            <div id="teamNamesContainer"></div>
+        </div>
+
+        <button onclick="generateTeams()">Generate Tim</button>
+
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Membuat Tim...</div>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+
+
+    <script>
+        let memberCounter = 0;
+
+        function addMemberInput() {
+            const memberList = document.getElementById('memberList');
+            const container = document.createElement('div');
+            container.className = 'member-input-container';
+            
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'member-input';
+            input.placeholder = 'Nama anggota';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'member-checkbox';
+            
+            const label = document.createElement('span');
+            label.className = 'member-label';
+            label.textContent = 'Ketua';
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'remove-member-btn';
+            removeBtn.textContent = 'Hapus';
+            removeBtn.onclick = () => container.remove();
+            
+            container.appendChild(input);
+            container.appendChild(checkbox);
+            container.appendChild(label);
+            container.appendChild(removeBtn);
+            
+            memberList.appendChild(container);
+            input.focus();
+            
+            memberCounter++;
+        }
+
+        function updateTeamNameInputs() {
+            const numTeams = parseInt(document.getElementById('numTeams').value);
+            const container = document.getElementById('teamNamesContainer');
+            container.innerHTML = '';
+
+            for (let i = 0; i < numTeams; i++) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.placeholder = `Tim ${i + 1}`;
+                input.className = 'team-name-input';
+                container.appendChild(input);
+            }
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function showError(message) {
+            const button = document.querySelector('button');
+            button.classList.add('shake');
+            alert(message);
+            setTimeout(() => button.classList.remove('shake'), 500);
+        }
+
+        function getMembers() {
+            const members = [];
+            const containers = document.querySelectorAll('.member-input-container');
+            
+            containers.forEach(container => {
+                const name = container.querySelector('.member-input').value.trim();
+                const isLeader = container.querySelector('.member-checkbox').checked;
+                
+                if (name) {
+                    members.push({ name, isLeader });
+                }
+            });
+            
+            return members;
+        }
+
+        async function generateTeams() {
+            const members = getMembers();
+            const numTeams = parseInt(document.getElementById('numTeams').value);
+            const teamNameInputs = document.querySelectorAll('.team-name-input');
+            const button = document.querySelector('button');
+            const loadingContainer = document.querySelector('.loading-container');
+            const resultsDiv = document.getElementById('results');
+
+            if (members.length === 0) {
+                showError('Silakan masukkan daftar anggota!');
+                return;
+            }
+            if (numTeams < 2) {
+                showError('Jumlah tim minimal 2!');
+                return;
+            }
+            if (members.length < numTeams) {
+                showError('Jumlah anggota harus lebih banyak dari jumlah tim!');
+                return;
+            }
+
+            button.disabled = true;
+            loadingContainer.classList.add('active');
+            resultsDiv.innerHTML = '';
+
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            const shuffledMembers = shuffleArray([...members]);
+            const membersPerTeam = Math.ceil(members.length / numTeams);
+            const teams = {};
+
+            for (let i = 0; i < numTeams; i++) {
+                const teamName = teamNameInputs[i].value.trim() || `Tim ${i + 1}`;
+                const startIdx = i * membersPerTeam;
+                const endIdx = Math.min(startIdx + membersPerTeam, shuffledMembers.length);
+                teams[teamName] = shuffledMembers.slice(startIdx, endIdx);
+            }
+
+            loadingContainer.classList.remove('active');
+            button.disabled = false;
+            displayTeams(teams);
+        }
+
+        function displayTeams(teams) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+
+            Object.entries(teams).forEach(([teamName, members], index) => {
+                setTimeout(() => {
+                    const teamDiv = document.createElement('div');
+                    teamDiv.className = 'team';
+
+                    const teamNameDiv = document.createElement('div');
+                    teamNameDiv.className = 'team-name';
+                    teamNameDiv.textContent = teamName;
+
+                    const membersList = document.createElement('ul');
+                    membersList.className = 'team-members';
+
+                    members.forEach(member => {
+                        const li = document.createElement('li');
+                        li.textContent = member.name;
+                        
+                        if (member.isLeader) {
+                            const leaderBadge = document.createElement('span');
+                            leaderBadge.className = 'leader-badge';
+                            leaderBadge.textContent = 'Ketua Tim';
+                            li.appendChild(leaderBadge);
+                        }
+                        
+                        membersList.appendChild(li);
+                    });
+
+                    teamDiv.appendChild(teamNameDiv);
+                    teamDiv.appendChild(membersList);
+                    resultsDiv.appendChild(teamDiv);
+                }, index * 200);
+            });
+        }
+
+        // Add initial member input
+        addMemberInput();
+        updateTeamNameInputs();
+        function addMemberInput() {
+            const memberList = document.getElementById('memberList');
+            const container = document.createElement('div');
+            container.className = 'member-input-container';
+            
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'member-input';
+            input.placeholder = 'Nama anggota';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'member-checkbox';
+            
+            const label = document.createElement('span');
+            label.className = 'member-label';
+            label.textContent = 'Ketua';
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'remove-member-btn';
+            removeBtn.textContent = 'Hapus';
+            removeBtn.onclick = () => container.remove();
+            
+            container.appendChild(input);
+            container.appendChild(checkbox);
+            container.appendChild(label);
+            container.appendChild(removeBtn);
+            
+            memberList.appendChild(container);
+            input.focus();
+        }
+
+        function getMembers() {
+            const members = [];
+            const containers = document.querySelectorAll('.member-input-container');
+            const useManualLeaders = document.getElementById('useManualLeaders').checked;
+            
+            containers.forEach(container => {
+                const name = container.querySelector('.member-input').value.trim();
+                const isLeader = useManualLeaders ? container.querySelector('.member-checkbox').checked : false;
+                
+                if (name) {
+                    members.push({ name, isLeader });
+                }
+            });
+            
+            return members;
+        }
+
+        function assignRandomLeader(teamMembers) {
+            const randomIndex = Math.floor(Math.random() * teamMembers.length);
+            return teamMembers.map((member, index) => ({
+                ...member,
+                isLeader: index === randomIndex
+            }));
+        }
+
+        async function generateTeams() {
+            const members = getMembers();
+            const numTeams = parseInt(document.getElementById('numTeams').value);
+            const teamNameInputs = document.querySelectorAll('.team-name-input');
+            const useRandomLeaders = document.getElementById('useRandomLeaders').checked;
+            const button = document.querySelector('button');
+            const loadingContainer = document.querySelector('.loading-container');
+            const resultsDiv = document.getElementById('results');
+
+            if (members.length === 0) {
+                showError('Silakan masukkan daftar anggota!');
+                return;
+            }
+            if (numTeams < 2) {
+                showError('Jumlah tim minimal 2!');
+                return;
+            }
+            if (members.length < numTeams) {
+                showError('Jumlah anggota harus lebih banyak dari jumlah tim!');
+                return;
+            }
+
+            button.disabled = true;
+            loadingContainer.classList.add('active');
+            resultsDiv.innerHTML = '';
+
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            const shuffledMembers = shuffleArray([...members]);
+            const membersPerTeam = Math.ceil(members.length / numTeams);
+            const teams = {};
+
+            for (let i = 0; i < numTeams; i++) {
+                const teamName = teamNameInputs[i].value.trim() || `Tim ${i + 1}`;
+                const startIdx = i * membersPerTeam;
+                const endIdx = Math.min(startIdx + membersPerTeam, shuffledMembers.length);
+                let teamMembers = shuffledMembers.slice(startIdx, endIdx);
+                
+                if (useRandomLeaders) {
+                    teamMembers = assignRandomLeader(teamMembers);
+                }
+                
+                teams[teamName] = teamMembers;
+            }
+
+            loadingContainer.classList.remove('active');
+            button.disabled = false;
+            displayTeams(teams);
+        }
+
+        function displayTeams(teams) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+
+            Object.entries(teams).forEach(([teamName, members], index) => {
+                setTimeout(() => {
+                    const teamDiv = document.createElement('div');
+                    teamDiv.className = 'team';
+
+                    const teamNameDiv = document.createElement('div');
+                    teamNameDiv.className = 'team-name';
+                    teamNameDiv.textContent = teamName;
+
+                    const membersList = document.createElement('ul');
+                    membersList.className = 'team-members';
+
+                    members.forEach(member => {
+                        const li = document.createElement('li');
+                        li.textContent = member.name;
+                        
+                        if (member.isLeader) {
+                            const leaderBadge = document.createElement('span');
+                            leaderBadge.className = document.getElementById('useRandomLeaders').checked ? 
+                                'leader-badge random-leader' : 'leader-badge';
+                            leaderBadge.textContent = 'Ketua Tim';
+                            li.appendChild(leaderBadge);
+                        }
+                        
+                        membersList.appendChild(li);
+                    });
+
+                    teamDiv.appendChild(teamNameDiv);
+                    teamDiv.appendChild(membersList);
+                    resultsDiv.appendChild(teamDiv);
+                }, index * 200);
+            });
+        }
+
+        // Event listeners for checkbox toggles
+        document.getElementById('useManualLeaders').addEventListener('change', function(e) {
+            const checkboxes = document.querySelectorAll('.member-checkbox');
+            const labels = document.querySelectorAll('.member-label');
+            const randomLeaderCheckbox = document.getElementById('useRandomLeaders');
+            
+            checkboxes.forEach(checkbox => checkbox.style.display = e.target.checked ? '' : 'none');
+            labels.forEach(label => label.style.display = e.target.checked ? '' : 'none');
+            
+            if (e.target.checked) {
+                randomLeaderCheckbox.checked = false;
+            }
+        });
+
+        document.getElementById('useRandomLeaders').addEventListener('change', function(e) {
+            const manualLeaderCheckbox = document.getElementById('useManualLeaders');
+            if (e.target.checked) {
+                manualLeaderCheckbox.checked = false;
+                const checkboxes = document.querySelectorAll('.member-checkbox');
+                const labels = document.querySelectorAll('.member-label');
+                checkboxes.forEach(checkbox => checkbox.style.display = 'none');
+                labels.forEach(label => label.style.display = 'none');
+            }
+        });
+
+        // Initialize
+        addMemberInput();
+        updateTeamNameInputs();
+        
+        // Hide manual leader checkboxes initially
+        const checkboxes = document.querySelectorAll('.member-checkbox');
+        const labels = document.querySelectorAll('.member-label');
+        checkboxes.forEach(checkbox => checkbox.style.display = 'none');
+        labels.forEach(label => label.style.display = 'none');
+    </script>
+</body>
+</html>
